@@ -3,16 +3,10 @@
 import React, { useState, useContext, useEffect } from 'react';
 import api from '../../api';
 import { AuthContext } from '../../AuthContext';
-import useDocumentMetadata from '../../hooks/useDocumentMetadata';
 import ProtectedRoute from '../../components/ProtectedRoute';
 
 function DieticianContent() {
   const { user } = useContext(AuthContext);
-  useDocumentMetadata({
-    title: 'Meal Planner',
-    description: 'Build a meal plan around your calorie, protein, and dietary targets.'
-  });
-
   const [formData, setFormData] = useState({
     age: '',
     weight: '',

@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://corematrix.vercel.app/sitemap.xml
+Sitemap: https://dumbelldore.vercel.app/sitemap.xml

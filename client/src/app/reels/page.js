@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../api';
-import useDocumentMetadata from '../../hooks/useDocumentMetadata';
 import ProtectedRoute from '../../components/ProtectedRoute';
 
 const REEL_TYPES = [
@@ -21,11 +20,6 @@ const FEED_FILTERS = [
 ];
 
 function ProgressReelsContent() {
-  useDocumentMetadata({
-    title: 'Progress Reels',
-    description: 'Post workout photos and videos to the community feed.'
-  });
-
   const [reels, setReels] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showUpload, setShowUpload] = useState(false);

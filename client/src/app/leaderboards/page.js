@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import api from '../../api';
-import useDocumentMetadata from '../../hooks/useDocumentMetadata';
 import ProtectedRoute from '../../components/ProtectedRoute';
 
 const CATEGORY_ICONS = {
@@ -138,11 +137,6 @@ function EmptyState({ category }) {
 }
 
 function LeaderboardsContent() {
-  useDocumentMetadata({
-    title: 'Leaderboards & Rankings',
-    description: 'See how you rank against other members in workouts, streak duration, and overall fitness consistency.',
-  });
-
   const [scope, setScope] = useState('national');
   const [category, setCategory] = useState('fat_loss');
   const [period, setPeriod] = useState('weekly');

@@ -1,6 +1,7 @@
 import { Manrope, Barlow_Condensed } from "next/font/google";
 import "./globals.css";
 import ClientLayout from "../components/ClientLayout";
+import { siteUrl } from "./seo";
 
 const manrope = Manrope({
   variable: "--font-body",
@@ -14,8 +15,8 @@ const barlowCondensed = Barlow_Condensed({
 });
 
 export const metadata = {
-  title: "DumbbellDore",
-  description: "DumbbellDore records workouts, meals, form reviews, and weekly training progress.",
+  metadataBase: new URL(siteUrl),
+  title: { default: "DumbbellDore", template: "%s | DumbbellDore" },
   verification: {
     google: "VCBmtD7GlhFh-NGe_74Lz9iO0vcnGW3AXmlqJtr9aYY",
   },

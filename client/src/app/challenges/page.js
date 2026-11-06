@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import api from '../../api';
 import { AuthContext } from '../../AuthContext';
-import useDocumentMetadata from '../../hooks/useDocumentMetadata';
 import ProtectedRoute from '../../components/ProtectedRoute';
 
 const typeConfig = {
@@ -60,11 +59,6 @@ function EmptyState({ message }) {
 
 function ChallengesContent() {
   const { user } = useContext(AuthContext);
-  useDocumentMetadata({
-    title: 'Fitness Challenges',
-    description: 'Join exciting fitness challenges, push your limits, and earn rewards for hitting training milestones.'
-  });
-
   const [challenges, setChallenges] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);

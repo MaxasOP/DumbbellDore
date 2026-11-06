@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import api from '../../api';
 import { AuthContext } from '../../AuthContext';
-import useDocumentMetadata from '../../hooks/useDocumentMetadata';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import NutritionBrief from '../../components/NutritionBrief';
 
@@ -18,10 +17,6 @@ const presets = [
 
 function FuelContent() {
   const { user } = useContext(AuthContext);
-  useDocumentMetadata({
-    title: 'Fuel Your Day - Nutrition Log',
-    description: 'Track your daily food intake, search presets for meals, and manage your protein, fat, and carbohydrate macronutrient targets.'
-  });
   const [meals, setMeals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [workouts, setWorkouts] = useState([]);

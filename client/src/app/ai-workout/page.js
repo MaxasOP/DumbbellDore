@@ -4,15 +4,9 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import api from '../../api';
-import useDocumentMetadata from '../../hooks/useDocumentMetadata';
 import ProtectedRoute from '../../components/ProtectedRoute';
 
 function WorkoutPlannerContent() {
-  useDocumentMetadata({
-    title: 'Workout Planner',
-    description: 'Generate custom, goal-oriented workout routines tailored to your target muscles, equipment, and experience.'
-  });
-
   const [formData, setFormData] = useState({
     experience_level: 'beginner',
     days_per_week: 4,

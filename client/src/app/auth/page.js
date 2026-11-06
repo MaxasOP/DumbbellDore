@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import api from '../../api';
 import { AuthContext } from '../../AuthContext';
-import useDocumentMetadata from '../../hooks/useDocumentMetadata';
 
 export default function Auth() {
   const [mode, setMode] = useState('login');
@@ -15,11 +14,6 @@ export default function Auth() {
   const [errors, setErrors] = useState({});
   const { setUser } = useContext(AuthContext);
   const router = useRouter();
-
-  useDocumentMetadata({
-    title: mode === 'login' ? 'Sign In' : 'Join Program',
-    description: 'Access your DumbbellDore account to log workouts, track progress, and customize your diet and fitness goals.'
-  });
 
   function onChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });

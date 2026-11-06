@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import api from '../../api';
 import { AuthContext } from '../../AuthContext';
-import useDocumentMetadata from '../../hooks/useDocumentMetadata';
 import ProtectedRoute from '../../components/ProtectedRoute';
 
 function DumbbellIcon({ className }) {
@@ -26,10 +25,6 @@ const templates = [
 
 function ForgeContent() {
   const { user } = useContext(AuthContext);
-  useDocumentMetadata({
-    title: 'Forge Workout Session',
-    description: 'Log your daily exercises, sets, reps, weight, and intensity using our fast mobile-friendly workout tracker.'
-  });
   const [workouts, setWorkouts] = useState([]);
   const [activePlan, setActivePlan] = useState(null);
   const [planLoading, setPlanLoading] = useState(true);

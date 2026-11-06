@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import api from '../../api';
-import useDocumentMetadata from '../../hooks/useDocumentMetadata';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import Link from 'next/link';
 
@@ -31,11 +30,6 @@ function readableLabel(value) {
 }
 
 function VideoFormAnalysisContent() {
-  useDocumentMetadata({
-    title: 'Video Form Analysis',
-    description: 'Upload a working set to review visible movement range and repetition consistency.'
-  });
-
   const fileInputRef = useRef(null);
   const [file, setFile] = useState(null);
   const [exercise, setExercise] = useState('Back squat');

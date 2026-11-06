@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import api from '../../api';
-import useDocumentMetadata from '../../hooks/useDocumentMetadata';
 import ProtectedRoute from '../../components/ProtectedRoute';
 
 const CATEGORIES = ['all', 'protein', 'pre-workout', 'vitamins', 'amino-acids', 'creatine', 'fat-burner', 'recovery'];
@@ -15,11 +14,6 @@ const SORT_OPTIONS = [
 ];
 
 function SupplementsContent() {
-  useDocumentMetadata({
-    title: 'Supplement Store',
-    description: 'Compare fitness supplements by category, goal, serving size, and listed price.'
-  });
-
   const [supplements, setSupplements] = useState([]);
   const [loadingSupplements, setLoadingSupplements] = useState(true);
   const [formData, setFormData] = useState({

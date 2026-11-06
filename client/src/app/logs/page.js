@@ -2,18 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import api from '../../api';
-import useDocumentMetadata from '../../hooks/useDocumentMetadata';
 import ProtectedRoute from '../../components/ProtectedRoute';
 
 function LogsContent() {
   const [items, setItems] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
-  useDocumentMetadata({
-    title: 'Workout & Meal History Logs',
-    description: 'Search, filter, and review your historical logged workouts and nutrition entries over time.'
-  });
-
   useEffect(() => {
     async function fetchAll() {
       setLoading(true);

@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import api from '../../api';
 import { AuthContext } from '../../AuthContext';
-import useDocumentMetadata from '../../hooks/useDocumentMetadata';
 import ProtectedRoute from '../../components/ProtectedRoute';
 import TrainingGuidance from '../../components/TrainingGuidance';
 
@@ -29,10 +28,6 @@ function parseLocalDate(value) {
 
 function ProgressContent() {
   const { user } = useContext(AuthContext);
-  useDocumentMetadata({
-    title: 'Weekly Fitness Progress',
-    description: 'View your weekly workout completion rates, body metric logs, and top exercise categories.'
-  });
   const [workouts, setWorkouts] = useState([]);
   const [activePlan, setActivePlan] = useState(null);
   const [analyses, setAnalyses] = useState([]);

@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AuthContext } from '../../AuthContext';
 import api from '../../api';
-import useDocumentMetadata from '../../hooks/useDocumentMetadata';
 import ProtectedRoute from '../../components/ProtectedRoute';
 
 const goalOptions = [
@@ -26,10 +25,6 @@ const activityOptions = [
 function SetupContent() {
   const { user, setUser } = useContext(AuthContext);
   const router = useRouter();
-  useDocumentMetadata({
-    title: 'Personalize Your Goals',
-    description: 'Set your fitness goals, log your body metrics, and personalize your daily calorie and protein targets.'
-  });
   const [form, setForm] = useState({
     goal: user?.goal || 'Build Muscle',
     weightKg: user?.weight || '',
