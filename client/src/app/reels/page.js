@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import api from '../../api';
-import ProtectedRoute from '../../components/ProtectedRoute';
+import { AuthContext } from '../../AuthContext';
 
 const REEL_TYPES = [
   { value: 'transformation', label: 'Transformation', color: 'bg-purple-100 text-purple-700', icon: '🔄' },
@@ -20,6 +20,7 @@ const FEED_FILTERS = [
 ];
 
 function ProgressReelsContent() {
+  const { user } = useContext(AuthContext);
   const [reels, setReels] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
@@ -35,13 +36,13 @@ function ProgressReelsContent() {
 
   useEffect(() => {
     fetchReels();
-  }, []);
+  }, [user]);
 
   const fetchReels = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/reels/feed');
-      setReels(response.data || []);
+      const response = await api.get(user ? '/reels' : '/reels/public');
+      setReels(response.data.reels || []);
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -51,9 +52,11 @@ function ProgressReelsContent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!user) { window.location.assign("/auth"); return; }
     try {
       const payload = {
         ...formData,
+        is_public: true,
         tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean)
       };
       await api.post('/reels', payload);
@@ -61,11 +64,12 @@ function ProgressReelsContent() {
       setShowUpload(false);
       fetchReels();
     } catch (error) {
-      alert('Error creating reel');
+      alert(error.response?.data?.error || 'Error creating reel');
     }
   };
 
   const likeReel = async (reelId) => {
+    if (!user) { window.location.assign("/auth"); return; }
     try {
       await api.post(`/reels/${reelId}/like`, {});
       fetchReels();
@@ -75,7 +79,7 @@ function ProgressReelsContent() {
   };
 
   const shareReel = async (reel) => {
-    const link = `${window.location.origin}/reels/${reel._id || reel.id}`;
+    const link = `${window.location.origin}/reels#reel-${encodeURIComponent(reel._id || reel.id)}`;
     try {
       await navigator.clipboard.writeText(link);
       alert('Link copied to clipboard!');
@@ -92,12 +96,12 @@ function ProgressReelsContent() {
     <div className="min-h-screen bg-gray-50 p-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">💪 Progress Reels</h1>
-        <p className="text-gray-600 mb-8">Post a workout photo or video.</p>
+        <p className="text-gray-600 mb-8">Browse public workout photos and videos. Sign in to share a public reel.</p>
 
         {/* Upload Section */}
         <button
           id="btn-reels-toggle-upload"
-          onClick={() => setShowUpload(!showUpload)}
+          onClick={() => user ? setShowUpload(!showUpload) : window.location.assign("/auth")}
           className="w-full text-white py-3 rounded-lg mb-8 font-semibold transition hover:opacity-90"
           style={{ backgroundColor: '#ff5a1f' }}
         >
@@ -251,6 +255,7 @@ function ProgressReelsContent() {
 }
 
 const ReelCard = ({ reel, onLike, onShare }) => {
+  const { user } = useContext(AuthContext);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(reel.likes_count || 0);
   const [showComments, setShowComments] = useState(false);
@@ -262,6 +267,7 @@ const ReelCard = ({ reel, onLike, onShare }) => {
   const typeConfig = REEL_TYPES.find(t => t.value === reel.type);
 
   const handleLike = async () => {
+    if (!user) { window.location.assign("/auth"); return; }
     setAnimating(true);
     setLiked(!liked);
     setLikeCount(prev => liked ? prev - 1 : prev + 1);
@@ -279,8 +285,10 @@ const ReelCard = ({ reel, onLike, onShare }) => {
     if (!showComments && comments.length === 0) {
       setCommentsLoading(true);
       try {
-        const res = await api.get(`/reels/${reel._id || reel.id}/comments`);
-        setComments(res.data || []);
+        const id = reel._id || reel.id;
+        const res = await api.get(user ? `/reels/${id}` : `/reels/${id}/public-comments`);
+        const entries = user ? res.data.reel?.comments : res.data;
+        setComments((entries || []).map(comment => ({ ...comment, user_name: comment.username, text: comment.comment_text })));
       } catch {
         console.error('Error loading comments');
       } finally {
@@ -290,20 +298,21 @@ const ReelCard = ({ reel, onLike, onShare }) => {
   };
 
   const submitComment = async (e) => {
+    if (!user) { e.preventDefault(); window.location.assign("/auth"); return; }
     e.preventDefault();
     if (!commentText.trim()) return;
     try {
-      await api.post(`/reels/${reel._id || reel.id}/comments`, { text: commentText });
+      await api.post(`/reels/${reel._id || reel.id}/comment`, { comment_text: commentText });
       setCommentText('');
-      const res = await api.get(`/reels/${reel._id || reel.id}/comments`);
-      setComments(res.data || []);
+      const res = await api.get(`/reels/${reel._id || reel.id}`);
+      setComments((res.data.reel?.comments || []).map(comment => ({ ...comment, user_name: comment.username, text: comment.comment_text })));
     } catch {
       alert('Error posting comment');
     }
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+    <div id={`reel-${reel._id || reel.id}`} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
       {/* Type Badge & Header */}
       <div className="relative">
         {reel.media_url && reel.media_type === 'video' ? (
@@ -326,7 +335,7 @@ const ReelCard = ({ reel, onLike, onShare }) => {
         <div className="flex items-start justify-between mb-3">
           <div>
             <h3 className="text-xl font-bold text-gray-900">{reel.title}</h3>
-            <p className="text-sm text-gray-500 mt-0.5">by {reel.user_name} · {new Date(reel.created_at).toLocaleDateString()}</p>
+            <p className="text-sm text-gray-500 mt-0.5">by {reel.user_id?.name || reel.user_name || 'Community member'} · {new Date(reel.created_at).toLocaleDateString()}</p>
           </div>
         </div>
 
@@ -438,9 +447,5 @@ const ReelCard = ({ reel, onLike, onShare }) => {
 };
 
 export default function ProgressReels() {
-  return (
-    <ProtectedRoute>
-      <ProgressReelsContent />
-    </ProtectedRoute>
-  );
+  return <ProgressReelsContent />;
 }

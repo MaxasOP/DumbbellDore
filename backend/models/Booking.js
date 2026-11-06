@@ -24,7 +24,7 @@ const BookingSchema = new mongoose.Schema({
   transaction_id: { type: String },
   
   // Booking status
-  status: { type: String, enum: ['confirmed', 'in_progress', 'completed', 'cancelled', 'rescheduled'], default: 'confirmed' },
+  status: { type: String, enum: ['requested', 'confirmed', 'in_progress', 'completed', 'cancelled', 'rescheduled'], default: 'confirmed' },
   cancellation_reason: { type: String },
   cancelled_by: { type: String }, // 'user' or 'provider'
   cancelled_at: { type: Date },

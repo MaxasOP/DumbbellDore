@@ -3,14 +3,13 @@
 import React, { useState, useContext, useEffect } from 'react';
 import api from '../../api';
 import { AuthContext } from '../../AuthContext';
-import ProtectedRoute from '../../components/ProtectedRoute';
 
 function DieticianContent() {
   const { user } = useContext(AuthContext);
   const [formData, setFormData] = useState({
-    age: '',
-    weight: '',
-    height: '',
+    age: 30,
+    weight: 75,
+    height: 175,
     activity_level: 'moderate',
     goal: 'weight_loss',
     budget: 'medium',
@@ -53,7 +52,7 @@ function DieticianContent() {
           diet_preference: formData.diet_preference
         }
       );
-      setMealPlan(response.data);
+      setMealPlan(response.data.mealPlan || response.data);
     } catch (error) {
       console.error('Error:', error);
       alert('Error generating meal plan');
@@ -66,7 +65,7 @@ function DieticianContent() {
     <div className="min-h-screen bg-gray-50 p-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">Dietician</h1>
-        <p className="text-gray-600 mb-8">Set your targets and build a day of meals.</p>
+        <p className="text-gray-600 mb-8">Set your targets and build a day of meals. Sign in to save your plan.</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white rounded-lg shadow-lg p-6">
@@ -77,7 +76,7 @@ function DieticianContent() {
                   type="number"
                   name="age"
                   value={formData.age}
-                  readOnly
+                  readOnly={Boolean(user)}
                   className="mt-1 w-full px-4 py-2 border rounded-lg bg-gray-100 cursor-not-allowed"
                 />
               </div>
@@ -88,7 +87,7 @@ function DieticianContent() {
                   type="number"
                   name="weight"
                   value={formData.weight}
-                  readOnly
+                  readOnly={Boolean(user)}
                   className="mt-1 w-full px-4 py-2 border rounded-lg bg-gray-100 cursor-not-allowed"
                 />
               </div>
@@ -99,7 +98,7 @@ function DieticianContent() {
                   type="number"
                   name="height"
                   value={formData.height}
-                  readOnly
+                  readOnly={Boolean(user)}
                   className="mt-1 w-full px-4 py-2 border rounded-lg bg-gray-100 cursor-not-allowed"
                 />
               </div>
@@ -350,9 +349,5 @@ function DieticianContent() {
 }
 
 export default function AIDietician() {
-  return (
-    <ProtectedRoute>
-      <DieticianContent />
-    </ProtectedRoute>
-  );
+  return <DieticianContent />;
 }

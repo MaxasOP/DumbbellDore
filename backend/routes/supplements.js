@@ -4,6 +4,7 @@
 const express = require('express');
 const router = express.Router();
 const { authOptional, authRequired } = require('../middleware/authMiddleware'); // Import both authOptional and authRequired
+const { aiLimiter } = require('../middleware/rateLimiter');
 const User = require('../models/User');
 const Supplement = require('../models/Supplement');
 const aiService = require('../services/aiService');
@@ -12,21 +13,21 @@ const aiService = require('../services/aiService');
  * POST /api/supplements/recommend
  * Get supplement recommendations based on user profile
  */
-router.post('/recommend', authRequired, async (req, res) => {
+router.post('/recommend', authOptional, aiLimiter, async (req, res) => {
   try {
-    const userId = req.user.id;
-    const user = await User.findById(userId);
+    const userId = req.user?.id;
+    const user = userId ? await User.findById(userId) : null;
 
-    if (!user) {
+    if (userId && !user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
     // Get recommendations from AI
     const recommendations = await aiService.recommendSupplements({
-      weight_kg: user.weight_kg,
-      goal: user.goal,
-      age: user.age_years,
-      activity_level: user.activity_level
+      weight_kg: user?.weight_kg ?? 75,
+      goal: user?.goal ?? (['muscle_gain', 'fat_loss', 'endurance', 'recovery'].includes(req.body.goal) ? req.body.goal : 'General Fitness'),
+      age: user?.age_years ?? 30,
+      activity_level: user?.activity_level ?? 'moderate'
     });
 
     // Find matching supplements in database

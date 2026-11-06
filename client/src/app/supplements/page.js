@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import api from '../../api';
-import ProtectedRoute from '../../components/ProtectedRoute';
 
 const CATEGORIES = ['all', 'protein', 'pre-workout', 'vitamins', 'amino-acids', 'creatine', 'fat-burner', 'recovery'];
 const SORT_OPTIONS = [
@@ -34,7 +33,7 @@ function SupplementsContent() {
   const fetchSupplements = async () => {
     setLoadingSupplements(true);
     try {
-      const response = await api.get('/supplements');
+      const response = await api.get('/supplements/search');
       const data = response.data;
       const list = Array.isArray(data)
         ? data
@@ -470,9 +469,5 @@ const SupplementSkeleton = () => (
 );
 
 export default function Supplements() {
-  return (
-    <ProtectedRoute>
-      <SupplementsContent />
-    </ProtectedRoute>
-  );
+  return <SupplementsContent />;
 }

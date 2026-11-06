@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import api from '../../api';
-import ProtectedRoute from '../../components/ProtectedRoute';
+import { AuthContext } from '../../AuthContext';
 
 function YogaContent() {
+  const { user } = useContext(AuthContext);
   const [streak, setStreak] = useState(0);
   const [selectedProgram, setSelectedProgram] = useState(null);
+  const [activeProgram, setActiveProgram] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const yogaPrograms = [
@@ -19,8 +21,12 @@ function YogaContent() {
   ];
 
   useEffect(() => {
+    if (!user) {
+      setStreak(0);
+      return;
+    }
     fetchYogaData();
-  }, []);
+  }, [user]);
 
   const fetchYogaData = async () => {
     setLoading(true);
@@ -35,6 +41,7 @@ function YogaContent() {
   };
 
   const completeSession = async () => {
+    if (!user) { window.location.assign("/auth"); return; }
     try {
       await api.put('/yoga/streak', { completed: true });
       fetchYogaData();
@@ -68,6 +75,14 @@ function YogaContent() {
             </div>
           </div>
         </div>
+
+        {activeProgram && (
+          <section className="bg-white rounded-lg p-5 mb-8">
+            <h2 className="font-bold">Current practice · {activeProgram.name}</h2>
+            <p>Follow your session at your own pace. Sign in to record it in your streak when you finish.</p>
+            <button className="btn-core-primary mt-3" onClick={completeSession}>Record completed session</button>
+          </section>
+        )}
 
         {/* Yoga Programs */}
         <div>
@@ -106,7 +121,7 @@ function YogaContent() {
                 >
                   Cancel
                 </button>
-                <button className="flex-1 btn-core-primary !py-2.5">
+                <button onClick={() => { setActiveProgram(selectedProgram); setSelectedProgram(null); }} className="flex-1 btn-core-primary !py-2.5">
                   Start Program
                 </button>
               </div>
@@ -135,9 +150,5 @@ const ProgramCard = ({ program, onSelect }) => (
 );
 
 export default function Yoga() {
-  return (
-    <ProtectedRoute>
-      <YogaContent />
-    </ProtectedRoute>
-  );
+  return <YogaContent />;
 }

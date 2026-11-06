@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useContext, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import api from '../../api';
-import ProtectedRoute from '../../components/ProtectedRoute';
+import { AuthContext } from '../../AuthContext';
 
 function WorkoutPlannerContent() {
+  const { user } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     experience_level: 'beginner',
     days_per_week: 4,
@@ -20,6 +21,14 @@ function WorkoutPlannerContent() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (!user) {
+      setWorkoutPlan(null);
+      setSavedAt(null);
+      setProgress([]);
+      setRestoring(false);
+      return;
+    }
+    setRestoring(true);
     let active = true;
     const restorePlan = async () => {
       try {
@@ -46,7 +55,7 @@ function WorkoutPlannerContent() {
     };
     restorePlan();
     return () => { active = false; };
-  }, []);
+  }, [user]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -67,7 +76,7 @@ function WorkoutPlannerContent() {
       );
       setWorkoutPlan(response.data.workoutPlan);
       setProgress(response.data.progress || []);
-      setSavedAt(response.data.savedAt || new Date().toISOString());
+      setSavedAt(response.data.savedAt || null);
     } catch (error) {
       console.error('Error:', error);
       const msg = error?.response?.data?.error || error?.message || 'Error generating workout plan';
@@ -171,6 +180,7 @@ function WorkoutPlannerContent() {
                     <span className="text-xs font-semibold text-lime-300">Saved to your account</span>
                   </div>
                   <p className="text-gray-600 mt-1 font-medium">{workoutPlan.goal_focus} • {workoutPlan.days_per_week} Days/Week</p>
+                  {!user ? <p className="text-xs text-gray-500 mt-2"><Link href="/auth">Sign in to save a plan and start a training day.</Link></p> : null}
                   {savedAt ? <p className="text-xs text-gray-400 mt-2">Updated {new Date(savedAt).toLocaleDateString()}</p> : null}
                 </div>
 
@@ -181,7 +191,7 @@ function WorkoutPlannerContent() {
                         <span className="text-lime-300 font-bold text-sm">{day.day}</span>
                         <h3 className="text-lg font-bold text-gray-900">{day.target_muscle_group}</h3>
                       </div>
-                      <Link className="plan-day-action" href={`/forge?planDay=${idx}`}>Start day <span>→</span></Link>
+                      {user && <Link className="plan-day-action" href={`/forge?planDay=${idx}`}>Start day <span>→</span></Link>}
                     </div>
                     
                     <div className="space-y-4">
@@ -274,9 +284,5 @@ function WorkoutPlannerContent() {
 }
 
 export default function AIWorkout() {
-  return (
-    <ProtectedRoute>
-      <WorkoutPlannerContent />
-    </ProtectedRoute>
-  );
+  return <WorkoutPlannerContent />;
 }

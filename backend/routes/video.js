@@ -3,7 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const videoController = require('../controllers/videoController');
-const { authRequired: authMiddleware } = require('../middleware/authMiddleware');
+const { authRequired: authMiddleware, authOptional } = require('../middleware/authMiddleware');
 const { aiLimiter } = require('../middleware/rateLimiter');
 const multer = require('multer');
 
@@ -27,7 +27,7 @@ const upload = multer({
 
 
 // Upload and analyze workout video
-router.post('/analyze', authMiddleware, aiLimiter, upload.single('video'), videoController.uploadWorkoutVideo);
+router.post('/analyze', authOptional, aiLimiter, upload.single('video'), videoController.uploadWorkoutVideo);
 
 // Analyze from URL
 router.post('/analyze-url', authMiddleware, aiLimiter, videoController.analyzeFormFromUrl);

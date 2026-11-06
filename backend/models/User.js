@@ -50,6 +50,7 @@ const UserSchema = new mongoose.Schema({
   current_workout_streak: { type: Number, default: 0 },
   current_meal_log_streak: { type: Number, default: 0 },
   current_yoga_streak: { type: Number, default: 0 },
+  last_yoga_session_day: Date,
   longest_workout_streak: { type: Number, default: 0 },
   
   // College & Company (for leaderboards)

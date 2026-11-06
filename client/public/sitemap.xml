@@ -1,4 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://dumbelldore.vercel.app/</loc></url>
+  <url><loc>https://dumbelldore.vercel.app/ai-dietician</loc></url>
+  <url><loc>https://dumbelldore.vercel.app/ai-workout</loc></url>
+  <url><loc>https://dumbelldore.vercel.app/auth</loc></url>
+  <url><loc>https://dumbelldore.vercel.app/challenges</loc></url>
+  <url><loc>https://dumbelldore.vercel.app/forge</loc></url>
+  <url><loc>https://dumbelldore.vercel.app/form-analysis</loc></url>
+  <url><loc>https://dumbelldore.vercel.app/fuel</loc></url>
+  <url><loc>https://dumbelldore.vercel.app/leaderboards</loc></url>
+  <url><loc>https://dumbelldore.vercel.app/logs</loc></url>
+  <url><loc>https://dumbelldore.vercel.app/progress</loc></url>
+  <url><loc>https://dumbelldore.vercel.app/reels</loc></url>
+  <url><loc>https://dumbelldore.vercel.app/setup</loc></url>
+  <url><loc>https://dumbelldore.vercel.app/supplements</loc></url>
+  <url><loc>https://dumbelldore.vercel.app/trainer-marketplace</loc></url>
+  <url><loc>https://dumbelldore.vercel.app/yoga</loc></url>
 </urlset>

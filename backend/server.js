@@ -62,6 +62,8 @@ app.use('/api/challenges', challengeRoutes);
 app.use('/api/reels', reelRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/video', videoRoutes);
+app.use('/api/yoga', require('./routes/yoga'));
+app.use('/api/trainers', require('./routes/trainers'));
 
 app.use('/api/analytics', analyticsRoutes);
 

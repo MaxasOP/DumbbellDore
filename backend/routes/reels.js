@@ -47,6 +47,7 @@ router.post('/', authRequired, async (req, res) => {
       media_type,
       tags: tags || [],
       category,
+      is_public: req.body.is_public === true,
       user_attributes_at_creation: {
         age_group: user.age_years ? Math.floor(user.age_years / 5) * 5 : 'unknown',
         city: user.city,
@@ -69,6 +70,31 @@ router.post('/', authRequired, async (req, res) => {
   }
 });
 
+router.get('/public', async (_req, res) => {
+  try {
+    const reels = await ProgressReel.find({ is_public: true, moderation_status: 'approved', is_deleted: false })
+      .select('title description type media_url media_type tags likes_count comments_count created_at user_id')
+      .sort({ created_at: -1 })
+      .limit(20)
+      .populate('user_id', 'name');
+    res.json({ reels });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch public reels' });
+  }
+});
+
+router.get('/:reelId/public-comments', async (req, res, next) => {
+  try {
+    const reel = await ProgressReel.findOne({
+      _id: req.params.reelId, is_public: true, moderation_status: 'approved', is_deleted: false
+    }).select('comments.username comments.comment_text comments.created_at');
+    if (!reel) return res.status(404).json({ error: 'Public reel not found' });
+    res.json(reel.comments);
+  } catch (error) {
+    next(error);
+  }
+});
+
 /**
  * GET /api/reels
  * Get reels for user (home feed)
@@ -85,6 +111,8 @@ router.get('/', authRequired, async (req, res) => {
       moderation_status: 'approved',
       is_deleted: false,
       $or: [
+        { is_public: true },
+        { user_id: userId },
         { 'user_attributes_at_creation.goal': user.goal },
         { 'user_attributes_at_creation.city': user.city },
         { 'user_attributes_at_creation.age_group': Math.floor(user.age_years / 5) * 5 }
@@ -121,10 +149,10 @@ router.get('/my-reels', authRequired, async (req, res) => {
 });
 
 /** GET /api/reels/:reelId */
-router.get('/:reelId', async (req, res) => {
+router.get('/:reelId', authRequired, async (req, res) => {
   try {
-    const reel = await ProgressReel.findByIdAndUpdate(
-      req.params.reelId,
+    const reel = await ProgressReel.findOneAndUpdate(
+      { _id: req.params.reelId, is_deleted: false, $or: [{ moderation_status: 'approved' }, { user_id: req.user.id }] },
       { $inc: { views_count: 1 } },
       { new: true }
     ).populate('user_id', 'name profile_picture');

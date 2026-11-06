@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import api from '../../api';
 import { AuthContext } from '../../AuthContext';
-import ProtectedRoute from '../../components/ProtectedRoute';
 
 const typeConfig = {
   steps: { label: 'Steps', color: 'bg-blue-100 text-blue-700' },
@@ -87,7 +86,7 @@ function ChallengesContent() {
     setLoading(true);
     try {
       const response = await api.get('/challenges');
-      setChallenges(response.data || []);
+      setChallenges(response.data.challenges || []);
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -96,6 +95,7 @@ function ChallengesContent() {
   };
 
   const joinChallenge = async (challengeId) => {
+    if (!user) { window.location.assign("/auth"); return; }
     try {
       await api.post(`/challenges/${challengeId}/join`, {});
       alert('Joined challenge successfully!');
@@ -106,6 +106,7 @@ function ChallengesContent() {
   };
 
   const leaveChallenge = async (challengeId) => {
+    if (!user) { window.location.assign("/auth"); return; }
     if (!window.confirm('Are you sure you want to leave this challenge?')) return;
     setLeavingId(challengeId);
     try {
@@ -297,9 +298,5 @@ const MyChallengeCard = ({ challenge, onLeave, leaving }) => {
 };
 
 export default function Challenges() {
-  return (
-    <ProtectedRoute>
-      <ChallengesContent />
-    </ProtectedRoute>
-  );
+  return <ChallengesContent />;
 }

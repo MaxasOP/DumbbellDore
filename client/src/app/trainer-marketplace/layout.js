@@ -1,8 +1,10 @@
-export const metadata = {
-  title: 'Trainer Marketplace',
-  description: 'Browse personal trainer profiles and fitness specialties.',
-  robots: { index: false },
-};
+import { publicMetadata } from '../seo';
+
+export const metadata = publicMetadata(
+  '/trainer-marketplace',
+  'Trainer Marketplace',
+  'Browse personal trainer profiles and fitness specialties.',
+);
 
 export default function Layout({ children }) {
   return children;

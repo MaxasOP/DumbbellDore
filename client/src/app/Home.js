@@ -46,7 +46,7 @@ function TrainingLoop() {
 }
 
 function resolveNextAction(user, activePlan, analyses) {
-  if (!user) return { href: '/auth', label: 'Build my first week', detail: 'Get a clear plan, log the work, review one key set, and know what comes next.' };
+  if (!user) return { href: '/ai-workout', label: 'Build my first week', detail: 'Get a clear plan, log the work, review one key set, and know what comes next.' };
   if (!activePlan?.workoutPlan?.weekly_routine?.length) return { href: '/ai-workout', label: 'Build your training week', detail: 'Choose days and equipment' };
   const routine = activePlan.workoutPlan.weekly_routine;
   let reviewCandidate = null;
@@ -183,6 +183,28 @@ export default function Home() {
       {error && <div className="status-note">{error} You can still explore the app.</div>}
 
       {!user && <TrainingLoop />}
+      {!user && (
+        <section className="data-panel p-6" aria-labelledby="explore-tools-title">
+          <h2 id="explore-tools-title">Explore fitness tools</h2>
+          <p>Try the tools as a guest. Sign in to save your work and view account history.</p>
+          <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <li><Link href="/ai-workout">AI workout planner</Link></li>
+            <li><Link href="/ai-dietician">AI meal planner</Link></li>
+            <li><Link href="/form-analysis">Workout video form analysis</Link></li>
+            <li><Link href="/forge">Workout log</Link></li>
+            <li><Link href="/fuel">Nutrition log</Link></li>
+            <li><Link href="/progress">Weekly progress</Link></li>
+            <li><Link href="/logs">Workout and meal history</Link></li>
+            <li><Link href="/setup">Fitness goal setup</Link></li>
+            <li><Link href="/yoga">Yoga programs</Link></li>
+            <li><Link href="/supplements">Supplement comparison</Link></li>
+            <li><Link href="/trainer-marketplace">Trainer marketplace</Link></li>
+            <li><Link href="/challenges">Fitness challenges</Link></li>
+            <li><Link href="/leaderboards">Fitness leaderboards</Link></li>
+            <li><Link href="/reels">Community progress reels</Link></li>
+          </ul>
+        </section>
+      )}
 
       {user && (
         <section className="coach-brief" aria-labelledby="coach-brief-title">

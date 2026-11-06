@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import api from '../../api';
 import { AuthContext } from '../../AuthContext';
-import ProtectedRoute from '../../components/ProtectedRoute';
 import NutritionBrief from '../../components/NutritionBrief';
 
 const presets = [
@@ -32,13 +31,19 @@ function FuelContent() {
   const isAuthed = Boolean(user);
 
   useEffect(() => {
+    if (!user) {
+      setMeals([]);
+      setWorkouts([]);
+      setLoading(false);
+      return;
+    }
     async function fetchMeals() {
       setLoading(true);
       try { const res = await api.get('/meals'); setMeals(res.data || []); } catch { setMsg('Your meals could not be loaded. Refresh to try again.'); } finally { setLoading(false); }
     }
     fetchMeals();
     api.get('/workouts').then(({ data }) => setWorkouts(data || [])).catch(() => setWorkouts([]));
-  }, []);
+  }, [user]);
 
   function onChange(e) { const { name, value } = e.target; setForm(prev => ({ ...prev, [name]: value })); }
 
@@ -306,9 +311,5 @@ function FuelContent() {
 }
 
 export default function Fuel() {
-  return (
-    <ProtectedRoute>
-      <FuelContent />
-    </ProtectedRoute>
-  );
+  return <FuelContent />;
 }

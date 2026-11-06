@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import api from '../../api';
 import { AuthContext } from '../../AuthContext';
-import ProtectedRoute from '../../components/ProtectedRoute';
 import TrainingGuidance from '../../components/TrainingGuidance';
 
 const weekPlan = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => ({ day, group: 'LOG', dayIndex: (index + 1) % 7 }));
@@ -33,6 +32,12 @@ function ProgressContent() {
   const [analyses, setAnalyses] = useState([]);
 
   useEffect(() => {
+    if (!user) {
+      setWorkouts([]);
+      setActivePlan(null);
+      setAnalyses([]);
+      return;
+    }
     async function fetchWorkouts() {
       const [workoutResult, planResult, analysisResult] = await Promise.allSettled([
         api.get('/workouts'), api.get('/ai/workout-plan'), api.get('/video/history?limit=12')
@@ -42,7 +47,7 @@ function ProgressContent() {
       if (analysisResult.status === 'fulfilled') setAnalyses(analysisResult.value.data || []);
     }
     fetchWorkouts();
-  }, []);
+  }, [user]);
 
   function computeWeekly() {
     if (activePlan?.workoutPlan?.weekly_routine?.length) {
@@ -98,6 +103,7 @@ function ProgressContent() {
           <div className="relative z-10 max-w-sm">
             <div className="font-semibold text-lime-300 uppercase tracking-wider text-xs mb-1.5">This week</div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Your training progress.</h1>
+            {!user && <p><Link href="/auth">Sign in</Link> to see your saved workouts and weekly progress.</p>}
             <p className="text-gray-200 mt-2 text-sm leading-relaxed">Your logged exercises are measured against the active plan.</p>
             <Link href="/ai-workout" className="plan-day-action mt-4 inline-flex">Adjust plan →</Link>
           </div>
@@ -139,10 +145,10 @@ function ProgressContent() {
           <h3 className="text-2xl font-bold text-gray-900">Your metrics</h3>
           {user ? (
             <dl className="metric-table">
-              <div><dt>Goal</dt><dd className="capitalize">{user.goal}</dd></div>
-              <div><dt>Weight</dt><dd>{user.weight || user.weight_kg || '-'} kg</dd></div>
-              <div><dt>Calories</dt><dd>{user.calorieGoal || user.calorie_goal || '-'} kcal</dd></div>
-              <div><dt>Protein</dt><dd>{user.proteinGoal || user.protein_goal || '-'} g</dd></div>
+              <div><dt>Goal</dt><dd className="capitalize">{user?.goal || '-'}</dd></div>
+              <div><dt>Weight</dt><dd>{user?.weight || user?.weight_kg || '-'} kg</dd></div>
+              <div><dt>Calories</dt><dd>{user?.calorieGoal || user?.calorie_goal || '-'} kcal</dd></div>
+              <div><dt>Protein</dt><dd>{user?.proteinGoal || user?.protein_goal || '-'} g</dd></div>
             </dl>
           ) : (
             <div className="mt-4 p-4 rounded-xl bg-gray-50 border border-gray-100 text-gray-500 text-sm">Sign in to see your profile metrics.</div>
@@ -190,9 +196,5 @@ function ProgressContent() {
 }
 
 export default function Progress() {
-  return (
-    <ProtectedRoute>
-      <ProgressContent />
-    </ProtectedRoute>
-  );
+  return <ProgressContent />;
 }

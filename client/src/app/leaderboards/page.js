@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import api from '../../api';
-import ProtectedRoute from '../../components/ProtectedRoute';
 
 const CATEGORY_ICONS = {
   fat_loss: '🔥',
@@ -378,9 +377,5 @@ function LeaderboardsContent() {
 }
 
 export default function Leaderboards() {
-  return (
-    <ProtectedRoute>
-      <LeaderboardsContent />
-    </ProtectedRoute>
-  );
+  return <LeaderboardsContent />;
 }

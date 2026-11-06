@@ -60,6 +60,7 @@ const ProgressReelSchema = new mongoose.Schema({
   engagement_rate: { type: Number },
   
   // Status
+  is_public: { type: Boolean, default: false },
   is_pinned: { type: Boolean, default: false },
   is_deleted: { type: Boolean, default: false },
   

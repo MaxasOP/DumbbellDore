@@ -7,6 +7,7 @@ const { authOptional, authRequired } = require('../middleware/authMiddleware'); 
 const Challenge = require('../models/Challenge');
 const User = require('../models/User');
 const FitnessWallet = require('../models/FitnessWallet');
+const { isValidObjectId } = require('mongoose');
 
 /**
  * GET /api/challenges
@@ -16,7 +17,7 @@ router.get('/', async (req, res) => {
   try {
     const { status = 'active', type, limit = 20 } = req.query;
 
-    let filter = {};
+    let filter = { is_public: { $ne: false } };
     if (status) {
       filter.status = status;
     }
@@ -157,9 +158,28 @@ router.post('/:challengeId/join', authRequired, async (req, res) => {
 });
 
 /**
- * POST /api/challenges/:challengeId/update-progress
- * Update user's progress in challenge
+ * POST /api/challenges/:challengeId/leave
+ * Remove the current user's participation
  */
+router.post('/:challengeId/leave', authRequired, async (req, res, next) => {
+  if (!isValidObjectId(req.params.challengeId)) {
+    return res.status(400).json({ error: 'Invalid challenge ID' });
+  }
+
+  try {
+    await Challenge.updateOne(
+      { _id: req.params.challengeId, participants: req.user.id },
+      {
+        $pull: { participants: req.user.id, leaderboard: { user_id: req.user.id } },
+        $inc: { participants_count: -1 }
+      }
+    );
+    res.json({ message: 'Challenge left' });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.post('/:challengeId/update-progress', authRequired, async (req, res) => {
   try {
     const userId = req.user.id;

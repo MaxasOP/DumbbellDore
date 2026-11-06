@@ -9,7 +9,9 @@ const fs = require('fs');
 
 exports.uploadWorkoutVideo = async (req, res) => {
   try {
-    const { exercise_name, workout_id } = req.body;
+    const { exercise_name } = req.body;
+    const userId = req.user?.id;
+    const workout_id = userId ? req.body.workout_id : null;
 
     if (!req.file) {
       return res.status(400).json({ error: 'No video file provided' });
@@ -36,7 +38,7 @@ exports.uploadWorkoutVideo = async (req, res) => {
 
     // 2. Save only results to MongoDB
     const formAnalysis = new FormAnalysis({
-      userId: req.user.id,
+      userId,
       workoutId: linkedWorkout?._id || null,
       planId: linkedWorkout?.plan_id || null,
       planDayIndex: linkedWorkout?.plan_day_index ?? null,
@@ -52,7 +54,7 @@ exports.uploadWorkoutVideo = async (req, res) => {
       framesAnalyzed: analysis.frames_analyzed || 0
     });
 
-    await formAnalysis.save();
+    if (userId) await formAnalysis.save();
 
     if (workout_id) {
       await Workout.updateOne(
@@ -85,7 +87,10 @@ exports.uploadWorkoutVideo = async (req, res) => {
 
     res.json({
       success: true,
-      analysis: formAnalysis,
+      analysis: userId ? formAnalysis : formAnalysis.toObject({ transform: (_doc, result) => {
+        delete result._id;
+        return result;
+      } }),
       feedback: feedbackData
     });
   } catch (error) {

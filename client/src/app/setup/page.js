@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AuthContext } from '../../AuthContext';
 import api from '../../api';
-import ProtectedRoute from '../../components/ProtectedRoute';
 
 const goalOptions = [
   { label: 'Build Muscle', value: 'Build Muscle' },
@@ -43,7 +42,10 @@ function SetupContent() {
   }
 
   async function saveProfile() {
-    if (!user) return;
+    if (!user) {
+      setMsg('Sign in to save these targets to your account.');
+      return;
+    }
     setSaving(true);
     try {
       const payload = {
@@ -81,23 +83,9 @@ function SetupContent() {
     }
   }
 
-  if (!user) {
-    return (
-      <div className="mt-6 page page-shell max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="card-soft p-5">
-          <div className="tag muted">Sign in required</div>
-          <h1 className="text-3xl mt-2 font-bold text-gray-900">Set your goals</h1>
-          <p className="mt-2 muted">Create an account to save calorie, protein, and training targets.</p>
-          <div className="mt-4">
-            <Link id="btn-setup-signin" href="/auth" className="btn-primary">Sign in</Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="mt-6 space-y-6 page page-shell max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {!user && <p className="muted"><Link href="/auth">Sign in</Link> to save your goals to your account.</p>}
       <section className="card p-6">
         <p className="eyebrow">Your first week · Step {step} of 2</p>
         <h1 className="text-3xl mt-2">{step === 1 ? 'Start with your goal.' : 'Make room for training.'}</h1>
@@ -174,5 +162,5 @@ function SetupContent() {
 }
 
 export default function Setup() {
-  return <ProtectedRoute><SetupContent /></ProtectedRoute>;
+  return <SetupContent />;
 }

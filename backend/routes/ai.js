@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authOptional: authMiddleware, authRequired } = require('../middleware/authMiddleware'); // Import authRequired
+const { aiLimiter } = require('../middleware/rateLimiter');
 const User = require('../models/User');
 const MealPlan = require('../models/MealPlan');
 const WorkoutPlan = require('../models/WorkoutPlan');
@@ -8,6 +9,15 @@ const aiService = require('../services/aiService');
 const Workout = require('../models/Workout');
 const FormAnalysis = require('../models/FormAnalysis');
 const { recommendExercise } = require('../services/trainingCoach');
+
+function boundedNumber(value, min, max, fallback) {
+  const number = Number(value);
+  return number >= min && number <= max ? number : fallback;
+}
+
+function allowedOption(value, options, fallback) {
+  return options.includes(value) ? value : fallback;
+}
 
 router.get('/training-coach', authRequired, async (req, res) => {
   try {
@@ -66,20 +76,19 @@ router.post('/workout-plan/complete-day', authRequired, async (req, res) => {
  * POST /api/ai/meal-plan
  * Generate personalized meal plan
  */
-router.post('/meal-plan', authMiddleware, async (req, res) => {
+router.post('/meal-plan', authMiddleware, aiLimiter, async (req, res) => {
   try {
-    // TEMP: allow AI generation without login.
-    // If token is missing/invalid, generate a generic plan using fallback values.
     const userId = req.user?.id;
     if (!userId) {
+      const { age, weight_kg, height_cm, activity_level, goal, budget_monthly, diet_preference } = req.body;
       const mealPlanData = await aiService.generateMealPlan({
-        age: 30,
-        weight_kg: 75,
-        height_cm: 175,
-        activity_level: 'moderate',
-        goal: 'maintenance',
-        budget_monthly: 5000,
-        diet_preference: 'vegetarian'
+        age: boundedNumber(age, 18, 120, 30),
+        weight_kg: boundedNumber(weight_kg, 25, 350, 75),
+        height_cm: boundedNumber(height_cm, 100, 250, 175),
+        activity_level: allowedOption(activity_level, ['sedentary', 'light', 'moderate', 'active', 'very_active'], 'moderate'),
+        goal: allowedOption(goal, ['weight_loss', 'muscle_gain', 'maintenance', 'health'], 'maintenance'),
+        budget_monthly: boundedNumber(budget_monthly, 1000, 20000, 5000),
+        diet_preference: allowedOption(diet_preference, ['vegetarian', 'non_vegetarian', 'vegan', 'eggetarian'], 'vegetarian')
       });
       return res.status(201).json({
         message: 'Meal plan generated successfully (guest)',
@@ -198,37 +207,44 @@ router.get('/workout-plan', authRequired, async (req, res) => {
   }
 });
 
-router.post('/workout-plan', authRequired, async (req, res) => {
+router.post('/workout-plan', authMiddleware, aiLimiter, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id;
     const daysPerWeek = Number(req.body.days_per_week || 4);
     if (!Number.isInteger(daysPerWeek) || daysPerWeek < 1 || daysPerWeek > 7) {
       return res.status(400).json({ error: 'Days per week must be between 1 and 7' });
     }
-    const user = await User.findById(userId);
-    if (!user) {
+    const user = userId ? await User.findById(userId) : null;
+    if (userId && !user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    const experienceLevel = allowedOption(req.body.experience_level, ['beginner', 'intermediate', 'advanced'], 'intermediate');
+    const equipmentAvailable = allowedOption(req.body.equipment_available, ['full_gym', 'dumbbells_only', 'bodyweight', 'resistance_bands', 'home_gym', 'dumbbells', 'minimal'], 'full_gym');
+
     // Generate workout plan using AI
     const workoutPlanData = await aiService.generateWorkoutPlan({
-      age: user.age_years,
-      weight_kg: user.weight_kg,
-      height_cm: user.height_cm,
-      activity_level: user.activity_level,
-      goal: user.goal,
-      experience_level: req.body.experience_level || 'intermediate',
+      age: user?.age_years ?? 30,
+      weight_kg: user?.weight_kg ?? 75,
+      height_cm: user?.height_cm ?? 175,
+      activity_level: user?.activity_level ?? 'moderate',
+      goal: user?.goal ?? 'General Fitness',
+      experience_level: experienceLevel,
       days_per_week: daysPerWeek,
-      equipment_available: req.body.equipment_available || 'full_gym'
+      equipment_available: equipmentAvailable
     });
+
+    if (!userId) {
+      return res.json({ workoutPlan: workoutPlanData, progress: [] });
+    }
 
     const savedPlan = await WorkoutPlan.create({
       userId,
       plan: workoutPlanData,
       preferences: {
-        experienceLevel: req.body.experience_level || 'intermediate',
+        experienceLevel: experienceLevel,
         daysPerWeek,
-        equipmentAvailable: req.body.equipment_available || 'full_gym'
+        equipmentAvailable: equipmentAvailable
       }
     });
 

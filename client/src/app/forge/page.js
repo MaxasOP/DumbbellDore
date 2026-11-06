@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import api from '../../api';
 import { AuthContext } from '../../AuthContext';
-import ProtectedRoute from '../../components/ProtectedRoute';
 
 function DumbbellIcon({ className }) {
   return (
@@ -50,6 +49,13 @@ function ForgeContent() {
   const isAuthed = Boolean(user);
 
   useEffect(() => {
+    if (!user) {
+      setWorkouts([]);
+      setActivePlan(null);
+      setGuidance([]);
+      setPlanLoading(false);
+      return;
+    }
   async function fetchWorkouts() {
     setLoading(true);
     try { 
@@ -71,7 +77,7 @@ function ForgeContent() {
       const boundedDay = Number.isInteger(requestedDay) && requestedDay >= 0 && requestedDay < (data.workoutPlan?.weekly_routine?.length || 0) ? requestedDay : 0;
       setSelectedPlanDay(boundedDay);
     }).catch(() => setActivePlan(null)).finally(() => setPlanLoading(false));
-  }, []);
+  }, [user]);
 
 
   function onChange(e) { 
@@ -408,9 +414,5 @@ function ForgeContent() {
 }
 
 export default function Forge() {
-  return (
-    <ProtectedRoute>
-      <ForgeContent />
-    </ProtectedRoute>
-  );
+  return <ForgeContent />;
 }

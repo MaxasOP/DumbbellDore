@@ -1,14 +1,21 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useContext, useState } from 'react';
+import Link from 'next/link';
 import api from '../../api';
-import ProtectedRoute from '../../components/ProtectedRoute';
+import { AuthContext } from '../../AuthContext';
 
 function LogsContent() {
+  const { user } = useContext(AuthContext);
   const [items, setItems] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   useEffect(() => {
+    if (!user) {
+      setItems([]);
+      setLoading(false);
+      return;
+    }
     async function fetchAll() {
       setLoading(true);
       try {
@@ -20,7 +27,7 @@ function LogsContent() {
       } catch (err) { console.warn('Logs fetch error', err); } finally { setLoading(false); }
     }
     fetchAll();
-  }, []);
+  }, [user]);
 
   const filtered = items.filter(it => filter === 'all' || it.type === filter);
 
@@ -30,7 +37,8 @@ function LogsContent() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="font-semibold text-gray-500 uppercase tracking-wide text-xs mb-2">History</div>
-            <h1 className="text-3xl font-extrabold text-gray-900">Logs</h1>
+            <h1 className="text-3xl font-extrabold text-gray-900">Workout and meal history</h1>
+            {!user && <p><Link href="/auth">Sign in</Link> to see your saved entries.</p>}
           </div>
           <div className="data-tabs" aria-label="Filter log entries">
             <button id="btn-logs-filter-all" className={`data-tab ${filter === 'all' ? 'is-active' : ''}`} onClick={() => setFilter('all')}>All</button>
@@ -67,9 +75,5 @@ function LogsContent() {
 }
 
 export default function Logs() {
-  return (
-    <ProtectedRoute>
-      <LogsContent />
-    </ProtectedRoute>
-  );
+  return <LogsContent />;
 }

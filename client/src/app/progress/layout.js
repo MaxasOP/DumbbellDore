@@ -1,8 +1,10 @@
-export const metadata = {
-  title: 'Weekly Fitness Progress',
-  description: 'View your weekly workout completion rates, body metric logs, and top exercise categories.',
-  robots: { index: false },
-};
+import { publicMetadata } from '../seo';
+
+export const metadata = publicMetadata(
+  '/progress',
+  'Weekly Fitness Progress',
+  'View your weekly workout completion rates, body metric logs, and top exercise categories.',
+);
 
 export default function Layout({ children }) {
   return children;
